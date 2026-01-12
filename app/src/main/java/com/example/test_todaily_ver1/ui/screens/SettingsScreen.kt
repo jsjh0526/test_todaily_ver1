@@ -1,5 +1,8 @@
 package com.example.test_todaily_ver1.ui.screens
 
+import androidx.compose.ui.draw.drawBehind
+
+import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn

@@ -1,5 +1,6 @@
 package com.example.test_todaily_ver1.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -10,18 +11,23 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.isSystemInDarkTheme
 import com.example.test_todaily_ver1.data.Priority
 import com.example.test_todaily_ver1.viewmodel.TodoViewModel
 import com.example.test_todaily_ver1.ui.components.TodoItem
 import com.example.test_todaily_ver1.ui.components.PriorityButton
 import com.example.test_todaily_ver1.ui.components.TagChip
 import com.example.test_todaily_ver1.ui.dialogs.TodoDetailDialog
+import com.example.test_todaily_ver1.ui.dialogs.DeleteConfirmDialog
 
 @Composable
 fun HomeScreen(viewModel: TodoViewModel) {
+    val isDarkTheme = isSystemInDarkTheme()
     val highPriorityTodos by viewModel.highPriorityTodos.collectAsState()
     
     var todoInput by remember { mutableStateOf("") }
@@ -31,6 +37,8 @@ fun HomeScreen(viewModel: TodoViewModel) {
     
     var selectedTodo by remember { mutableStateOf<com.example.test_todaily_ver1.data.Todo?>(null) }
     var showDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var todoToDelete by remember { mutableStateOf<com.example.test_todaily_ver1.data.Todo?>(null) }
     
     val quotes = listOf(
         "작은 발걸음도 앞으로 나아가는 것입니다.",
@@ -50,10 +58,19 @@ fun HomeScreen(viewModel: TodoViewModel) {
         )
     }
 
-    // MaterialTheme 색상만 사용 (자동 전환!)
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+    if (showDeleteDialog && todoToDelete != null) {
+        DeleteConfirmDialog(
+            onDismiss = { showDeleteDialog = false },
+            onConfirm = {
+                viewModel.deleteTodo(todoToDelete!!)
+                todoToDelete = null
+            }
+        )
+    }
+
+    // MainActivity 배경 사용 (투명하게)
+    Box(
+        modifier = Modifier.fillMaxSize()
     ) {
         LazyColumn(
             modifier = Modifier
@@ -61,36 +78,48 @@ fun HomeScreen(viewModel: TodoViewModel) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // 명언 카드
+            // 명언 카드 (보라 그라데이션)
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(14.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                        containerColor = Color.Transparent
                     )
                 ) {
-                    Row(
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(24.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(text = "💡", fontSize = 28.sp)
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Text(
-                            text = "\" $currentQuote \"",
-                            modifier = Modifier.weight(1f),
-                            fontSize = 16.sp,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            lineHeight = 24.sp
-                        )
-                        IconButton(onClick = { currentQuote = quotes.random() }) {
-                            Icon(
-                                Icons.Default.Refresh,
-                                "새로고침",
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer
+                            .background(
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color(0xFF615FFF),  // 보라
+                                        Color(0xFF9810FA)   // 진보라
+                                    )
+                                )
                             )
+                            .padding(24.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(text = "💡", fontSize = 28.sp)
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(
+                                text = "\" $currentQuote \"",
+                                modifier = Modifier.weight(1f),
+                                fontSize = 16.sp,
+                                color = Color.White,
+                                lineHeight = 24.sp
+                            )
+                            IconButton(onClick = { currentQuote = quotes.random() }) {
+                                Icon(
+                                    Icons.Default.Refresh,
+                                    "새로고침",
+                                    tint = Color.White
+                                )
+                            }
                         }
                     }
                 }
@@ -106,7 +135,7 @@ fun HomeScreen(viewModel: TodoViewModel) {
                         Icon(
                             Icons.Default.CheckCircle,
                             null,
-                            tint = MaterialTheme.colorScheme.primary,
+                            tint = Color(0xFF615FFF),  // 피그마 보라
                             modifier = Modifier.size(32.dp)
                         )
                         Spacer(Modifier.width(12.dp))
@@ -114,14 +143,14 @@ fun HomeScreen(viewModel: TodoViewModel) {
                             "할 일 관리",
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onBackground
+                            color = if (isDarkTheme) Color.White else Color(0xFF312C85)
                         )
                     }
                     Spacer(Modifier.height(4.dp))
                     Text(
                         "오늘의 할 일을 관리해보세요",
                         fontSize = 16.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = if (isDarkTheme) Color(0xFFB0B0B0) else Color(0xFF4A5565)
                     )
                 }
             }
@@ -131,6 +160,9 @@ fun HomeScreen(viewModel: TodoViewModel) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(14.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (isDarkTheme) Color(0xFF2D2D2D) else Color.White
+                    ),
                     elevation = CardDefaults.cardElevation(2.dp)
                 ) {
                     Column(
@@ -142,13 +174,14 @@ fun HomeScreen(viewModel: TodoViewModel) {
                         Text(
                             "새로운 할 일 추가",
                             fontSize = 16.sp,
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.SemiBold,
+                            color = if (isDarkTheme) Color.White else Color(0xFF0A0A0A)
                         )
                         
                         Text(
                             "해야 할 일을 입력하고 Enter를 누르거나 추가 버튼을 클릭하세요",
                             fontSize = 16.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            color = Color(0xFF717182),  // 피그마 설명
                             lineHeight = 24.sp
                         )
 
@@ -158,12 +191,24 @@ fun HomeScreen(viewModel: TodoViewModel) {
                             OutlinedTextField(
                                 value = todoInput,
                                 onValueChange = { todoInput = it },
-                                placeholder = { Text("할 일을 입력하세요...") },
+                                placeholder = { 
+                                    Text(
+                                        "할 일을 입력하세요...",
+                                        color = Color(0xFF717182)
+                                    ) 
+                                },
                                 modifier = Modifier.weight(1f),
                                 shape = RoundedCornerShape(10.dp),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    unfocusedContainerColor = Color(0xFFF3F3F5),
+                                    focusedContainerColor = Color(0xFFF3F3F5),
+                                    unfocusedBorderColor = Color.Transparent,
+                                    focusedBorderColor = Color(0xFF615FFF)
+                                ),
                                 singleLine = true
                             )
                             
+                            // 피그마 추가 버튼 (검정)
                             Button(
                                 onClick = {
                                     if (todoInput.isNotBlank()) {
@@ -179,7 +224,11 @@ fun HomeScreen(viewModel: TodoViewModel) {
                                 },
                                 enabled = todoInput.isNotBlank(),
                                 modifier = Modifier.width(104.dp),
-                                shape = RoundedCornerShape(10.dp)
+                                shape = RoundedCornerShape(10.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFF030213),  // 피그마 검정
+                                    contentColor = Color.White
+                                )
                             ) {
                                 Icon(Icons.Default.Add, null, Modifier.size(16.dp))
                                 Spacer(Modifier.width(4.dp))
@@ -191,7 +240,11 @@ fun HomeScreen(viewModel: TodoViewModel) {
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Text("우선도:", fontSize = 14.sp)
+                            Text(
+                                "우선도:",
+                                fontSize = 14.sp,
+                                color = Color(0xFF717182)
+                            )
                             PriorityButton(Priority.HIGH, selectedPriority == Priority.HIGH) { 
                                 selectedPriority = Priority.HIGH 
                             }
@@ -216,13 +269,29 @@ fun HomeScreen(viewModel: TodoViewModel) {
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Text("태그:", fontSize = 14.sp)
+                                Text(
+                                    "태그:",
+                                    fontSize = 14.sp,
+                                    color = Color(0xFF717182)
+                                )
                                 OutlinedTextField(
                                     value = tagInput,
                                     onValueChange = { tagInput = it },
-                                    placeholder = { Text("태그 입력 후 Enter...") },
+                                    placeholder = { 
+                                        Text(
+                                            "태그 입력 후 Enter...",
+                                            fontSize = 14.sp,
+                                            color = Color(0xFF717182)
+                                        ) 
+                                    },
                                     modifier = Modifier.weight(1f),
                                     shape = RoundedCornerShape(4.dp),
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        unfocusedContainerColor = Color(0xFFF3F3F5),
+                                        focusedContainerColor = Color(0xFFF3F3F5),
+                                        unfocusedBorderColor = Color.Transparent,
+                                        focusedBorderColor = Color(0xFF615FFF)
+                                    ),
                                     singleLine = true,
                                     trailingIcon = {
                                         if (tagInput.isNotBlank()) {
@@ -233,7 +302,11 @@ fun HomeScreen(viewModel: TodoViewModel) {
                                                     tagInput = ""
                                                 }
                                             }) {
-                                                Icon(Icons.Default.Add, "추가")
+                                                Icon(
+                                                    Icons.Default.Add,
+                                                    "추가",
+                                                    tint = Color(0xFF615FFF)
+                                                )
                                             }
                                         }
                                     },
@@ -265,12 +338,13 @@ fun HomeScreen(viewModel: TodoViewModel) {
                     Text(
                         "우선순위 높은 할 일",
                         fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.SemiBold,
+                        color = if (isDarkTheme) Color.White else Color(0xFF0A0A0A)
                     )
                     Text(
                         "${highPriorityTodos.count { !it.isCompleted }}개의 중요한 할 일",
                         fontSize = 16.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = Color(0xFF717182)
                     )
                 }
             }
@@ -283,8 +357,9 @@ fun HomeScreen(viewModel: TodoViewModel) {
                             .height(200.dp),
                         shape = RoundedCornerShape(14.dp),
                         colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
-                        )
+                            containerColor = if (isDarkTheme) Color(0xFF2D2D2D) else Color.White
+                        ),
+                        elevation = CardDefaults.cardElevation(2.dp)
                     ) {
                         Column(
                             modifier = Modifier.fillMaxSize(),
@@ -295,13 +370,13 @@ fun HomeScreen(viewModel: TodoViewModel) {
                                 Icons.Default.CheckCircle,
                                 null,
                                 modifier = Modifier.size(64.dp),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.4f)
+                                tint = Color(0xFF99A1AF).copy(alpha = 0.3f)
                             )
                             Spacer(Modifier.height(16.dp))
                             Text(
                                 "우선순위가 높은 할 일이 없습니다.",
                                 fontSize = 16.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = Color(0xFF99A1AF)
                             )
                         }
                     }
@@ -311,7 +386,10 @@ fun HomeScreen(viewModel: TodoViewModel) {
                     TodoItem(
                         todo,
                         { viewModel.toggleComplete(todo) },
-                        { viewModel.deleteTodo(todo) },
+                        {
+                            todoToDelete = todo
+                            showDeleteDialog = true
+                        },
                         {
                             selectedTodo = todo
                             showDialog = true

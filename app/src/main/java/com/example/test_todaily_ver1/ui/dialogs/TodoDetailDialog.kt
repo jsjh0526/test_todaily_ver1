@@ -32,6 +32,96 @@ fun TodoDetailDialog(
     var tags by remember { mutableStateOf(todo.tags) }
     var tagInput by remember { mutableStateOf("") }
     var description by remember { mutableStateOf(todo.description ?: "") }
+    var dueDate by remember { mutableStateOf(todo.dueDate) }
+    var reminderTime by remember { mutableStateOf(todo.reminderTime) }
+    
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
+    var showDeleteConfirm by remember { mutableStateOf(false) }
+
+    // 삭제 확인 다이얼로그
+    if (showDeleteConfirm) {
+        DeleteConfirmDialog(
+            onDismiss = { showDeleteConfirm = false },
+            onConfirm = {
+                onDelete()
+                onDismiss()
+            }
+        )
+    }
+
+    // 날짜 선택 다이얼로그
+    if (showDatePicker) {
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = dueDate ?: System.currentTimeMillis()
+        )
+        
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        dueDate = datePickerState.selectedDateMillis
+                        showDatePicker = false
+                    }
+                ) {
+                    Text("확인")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("취소")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
+    // 시간 선택 다이얼로그
+    if (showTimePicker) {
+        val timePickerState = rememberTimePickerState(
+            initialHour = if (reminderTime != null) {
+                Calendar.getInstance().apply { timeInMillis = reminderTime!! }.get(Calendar.HOUR_OF_DAY)
+            } else {
+                9
+            },
+            initialMinute = if (reminderTime != null) {
+                Calendar.getInstance().apply { timeInMillis = reminderTime!! }.get(Calendar.MINUTE)
+            } else {
+                0
+            }
+        )
+        
+        AlertDialog(
+            onDismissRequest = { showTimePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val calendar = Calendar.getInstance()
+                        if (dueDate != null) {
+                            calendar.timeInMillis = dueDate!!
+                        }
+                        calendar.set(Calendar.HOUR_OF_DAY, timePickerState.hour)
+                        calendar.set(Calendar.MINUTE, timePickerState.minute)
+                        calendar.set(Calendar.SECOND, 0)
+                        reminderTime = calendar.timeInMillis
+                        showTimePicker = false
+                    }
+                ) {
+                    Text("확인")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTimePicker = false }) {
+                    Text("취소")
+                }
+            },
+            text = {
+                TimePicker(state = timePickerState)
+            }
+        )
+    }
     
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -178,6 +268,60 @@ fun TodoDetailDialog(
                     maxLines = 5
                 )
 
+                // 마감일 선택
+                OutlinedButton(
+                    onClick = { showDatePicker = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Icon(Icons.Default.DateRange, null, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        if (dueDate != null) {
+                            SimpleDateFormat("yyyy년 MM월 dd일", Locale.KOREAN)
+                                .format(Date(dueDate!!))
+                        } else {
+                            "마감일 설정"
+                        }
+                    )
+                    if (dueDate != null) {
+                        Spacer(Modifier.weight(1f))
+                        IconButton(
+                            onClick = { dueDate = null },
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(Icons.Default.Close, "제거", modifier = Modifier.size(18.dp))
+                        }
+                    }
+                }
+
+                // 알림 시간 선택
+                OutlinedButton(
+                    onClick = { showTimePicker = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Icon(Icons.Default.Notifications, null, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        if (reminderTime != null) {
+                            SimpleDateFormat("HH:mm 알림", Locale.KOREAN)
+                                .format(Date(reminderTime!!))
+                        } else {
+                            "알림 설정"
+                        }
+                    )
+                    if (reminderTime != null) {
+                        Spacer(Modifier.weight(1f))
+                        IconButton(
+                            onClick = { reminderTime = null },
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(Icons.Default.Close, "제거", modifier = Modifier.size(18.dp))
+                        }
+                    }
+                }
+
                 Divider()
 
                 // 버튼들
@@ -187,10 +331,7 @@ fun TodoDetailDialog(
                 ) {
                     // 삭제 버튼
                     OutlinedButton(
-                        onClick = {
-                            onDelete()
-                            onDismiss()
-                        },
+                        onClick = { showDeleteConfirm = true },
                         colors = ButtonDefaults.outlinedButtonColors(
                             contentColor = MaterialTheme.colorScheme.error
                         ),
@@ -212,7 +353,9 @@ fun TodoDetailDialog(
                                 content = content,
                                 priority = selectedPriority,
                                 tags = tags,
-                                description = description.ifBlank { null }
+                                description = description.ifBlank { null },
+                                dueDate = dueDate,
+                                reminderTime = reminderTime
                             )
                             onSave(updatedTodo)
                             onDismiss()

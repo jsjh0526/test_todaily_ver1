@@ -8,25 +8,32 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple500,              // #615FFF
+    // Primary (피그마 정확)
+    primary = Purple500,                 // #615FFF 우선순위
     onPrimary = Color.White,
-    primaryContainer = BackgroundLight, // #EFF6FF
-    onPrimaryContainer = TextPrimary,  // #312C85
+    primaryContainer = BackgroundLight,  // #EFF6FF 배경
+    onPrimaryContainer = TextTitle,      // #312C85 제목
     
-    secondary = Purple700,
+    // Secondary (네비게이션)
+    secondary = Purple600,               // #4F39F6 선택된 네비
     onSecondary = Color.White,
     
-    background = BackgroundLight,     // 연보라 배경
-    onBackground = TextOnCard,        // #0A0A0A
+    // Background
+    background = BackgroundLight,        // #EFF6FF
+    onBackground = TextTitle,            // #312C85
     
-    surface = Surface,                // 카드 흰색
-    onSurface = TextOnCard,
-    onSurfaceVariant = TextTertiary,  // #717182
+    // Surface (카드)
+    surface = Color.White,
+    onSurface = TextOnCard,              // #0A0A0A
+    onSurfaceVariant = TextSubtitle,     // #4A5565
+    surfaceVariant = SurfaceGray,        // #F3F3F5
     
+    // Outline
+    outline = TextPlaceholder,           // #99A1AF
+    
+    // Error
     error = PriorityHigh,
-    onError = Color.White,
-    
-    outline = Color(0xFFE0E0E0)
+    onError = Color.White
 )
 
 private val DarkColorScheme = darkColorScheme(
@@ -35,7 +42,7 @@ private val DarkColorScheme = darkColorScheme(
     primaryContainer = Color(0xFF3D3D3D),
     onPrimaryContainer = Color.White,
     
-    secondary = Purple700,
+    secondary = Purple600,
     onSecondary = Color.White,
     
     background = DarkBackground,
@@ -44,11 +51,12 @@ private val DarkColorScheme = darkColorScheme(
     surface = DarkSurface,
     onSurface = DarkText,
     onSurfaceVariant = Color(0xFFB0B0B0),
+    surfaceVariant = Color(0xFF3D3D3D),
+    
+    outline = Color(0xFF5D5D5D),
     
     error = PriorityHigh,
-    onError = Color.White,
-    
-    outline = Color(0xFF3D3D3D)
+    onError = Color.White
 )
 
 @Composable
