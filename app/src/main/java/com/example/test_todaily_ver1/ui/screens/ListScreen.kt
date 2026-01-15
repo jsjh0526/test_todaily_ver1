@@ -127,12 +127,15 @@ fun ListScreen(viewModel: TodoViewModel) {
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(10.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            unfocusedContainerColor = Color(0xFFF3F3F5),
-                            focusedContainerColor = Color(0xFFF3F3F5),
+                            unfocusedContainerColor = if (isDarkTheme) Color(0xFF3A3A3A) else Color(0xFFF3F3F5),
+                            focusedContainerColor = if (isDarkTheme) Color(0xFF3A3A3A) else Color(0xFFF3F3F5),
                             unfocusedBorderColor = Color.Transparent,
-                            focusedBorderColor = Color(0xFF615FFF)
+                            focusedBorderColor = Color(0xFF615FFF),
+                            unfocusedTextColor = if (isDarkTheme) Color.White else Color(0xFF0A0A0A),
+                            focusedTextColor = if (isDarkTheme) Color.White else Color(0xFF0A0A0A)
                         ),
-                        singleLine = true
+                        singleLine = true,
+                        maxLines = 1
                     )
 
                     // 태그 필터

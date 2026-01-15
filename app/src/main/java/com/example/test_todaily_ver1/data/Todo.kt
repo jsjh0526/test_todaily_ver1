@@ -14,13 +14,13 @@ data class Todo(
     val description: String? = null,          // 상세 설명
     val priority: Priority,                   // 우선순위
     val tags: List<String> = emptyList(),     // 태그
-    val dueDate: Long? = null,                // 마감일 (timestamp)
-    val reminderTime: Long? = null,           // 알림 시간 (timestamp)
+    val dueDate: Long? = null,                // 마감일 (날짜+시간 timestamp)
+    val reminderTimes: List<Long> = emptyList(), // 알림 시간들 (여러 개 가능)
     val isCompleted: Boolean = false,         // 완료 상태
     val createdAt: Long = System.currentTimeMillis() // 생성 시간
 )
 
-// Room TypeConverter for List<String>
+// Room TypeConverter
 class Converters {
     @TypeConverter
     fun fromPriority(priority: Priority): Int {
@@ -40,5 +40,15 @@ class Converters {
     @TypeConverter
     fun toStringList(data: String): List<String> {
         return if (data.isEmpty()) emptyList() else data.split(",")
+    }
+
+    @TypeConverter
+    fun fromLongList(list: List<Long>): String {
+        return list.joinToString(",")
+    }
+
+    @TypeConverter
+    fun toLongList(data: String): List<Long> {
+        return if (data.isEmpty()) emptyList() else data.split(",").map { it.toLong() }
     }
 }

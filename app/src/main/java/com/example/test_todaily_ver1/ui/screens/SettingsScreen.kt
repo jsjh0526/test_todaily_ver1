@@ -1,8 +1,9 @@
 package com.example.test_todaily_ver1.ui.screens
 
-import androidx.compose.ui.draw.drawBehind
-
-import androidx.compose.foundation.background
+import android.content.Context
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -13,14 +14,41 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.test_todaily_ver1.viewmodel.TodoViewModel
+import kotlinx.coroutines.launch
 
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(viewModel: TodoViewModel) {
+    val context = LocalContext.current
     val isDarkMode = isSystemInDarkTheme()
+    val scope = rememberCoroutineScope()
+    
     var notificationEnabled by remember { mutableStateOf(true) }
+    var isExporting by remember { mutableStateOf(false) }
+    var isImporting by remember { mutableStateOf(false) }
+    
+    // 파일 선택기 (JSON 불러오기)
+    val filePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let {
+            scope.launch {
+                isImporting = true
+                val success = viewModel.importDataFromUri(it.toString())
+                isImporting = false
+                
+                if (success) {
+                    Toast.makeText(context, "데이터를 성공적으로 불러왔습니다!", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(context, "데이터 불러오기에 실패했습니다.", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
     
     LazyColumn(
         modifier = Modifier
@@ -42,62 +70,6 @@ fun SettingsScreen() {
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-            }
-        }
-
-        // 디스플레이
-        item {
-            Text(
-                text = "디스플레이",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-        }
-
-        item {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
-            ) {
-                Column(modifier = Modifier.padding(20.dp)) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(bottom = 12.dp)
-                    ) {
-                        Icon(
-                            imageVector = if (isDarkMode) Icons.Default.DarkMode 
-                                         else Icons.Default.LightMode,
-                            contentDescription = null,
-                            modifier = Modifier.size(24.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text(
-                                text = "테마 설정",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Text(
-                                text = "시스템 설정을 따릅니다",
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                    
-                    Text(
-                        text = if (isDarkMode) "현재 다크 모드로 표시됩니다" 
-                               else "현재 라이트 모드로 표시됩니다",
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
             }
         }
 
@@ -184,64 +156,103 @@ fun SettingsScreen() {
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     // 데이터 다운로드
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                    Button(
+                        onClick = {
+                            scope.launch {
+                                isExporting = true
+                                val file = viewModel.exportData()
+                                isExporting = false
+                                
+                                if (file != null) {
+                                    Toast.makeText(
+                                        context,
+                                        "데이터가 저장되었습니다!\n${file.name}",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                } else {
+                                    Toast.makeText(
+                                        context,
+                                        "데이터 저장에 실패했습니다.",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            }
+                        },
+                        enabled = !isExporting,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp)
                     ) {
-                        Icon(
-                            Icons.Default.Download,
-                            null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text(
-                                text = "데이터 다운로드",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.onSurface
+                        if (isExporting) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                color = MaterialTheme.colorScheme.onPrimary
                             )
-                            Text(
-                                text = "현재 할 일 목록을 JSON 파일로 저장합니다",
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            Spacer(Modifier.width(12.dp))
+                        } else {
+                            Icon(
+                                Icons.Default.Download,
+                                null,
+                                modifier = Modifier.size(20.dp)
                             )
+                            Spacer(Modifier.width(12.dp))
                         }
+                        Text(
+                            text = if (isExporting) "저장 중..." else "데이터 다운로드",
+                            fontSize = 16.sp
+                        )
                     }
+                    
+                    Spacer(Modifier.height(8.dp))
+                    
+                    Text(
+                        text = "현재 할 일 목록을 JSON 파일로 저장합니다.\nDownloads 폴더에 저장됩니다.",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        lineHeight = 18.sp
+                    )
                     
                     Divider(modifier = Modifier.padding(vertical = 16.dp))
                     
                     // 데이터 불러오기
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            Icons.Default.Upload,
-                            null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(24.dp)
+                    Button(
+                        onClick = {
+                            filePickerLauncher.launch("application/json")
+                        },
+                        enabled = !isImporting,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.secondary
                         )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text(
-                                text = "데이터 불러오기",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.onSurface
+                    ) {
+                        if (isImporting) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                color = MaterialTheme.colorScheme.onSecondary
                             )
-                            Text(
-                                text = "저장된 JSON 파일로 할 일 목록을 복구합니다",
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            Spacer(Modifier.width(12.dp))
+                        } else {
+                            Icon(
+                                Icons.Default.Upload,
+                                null,
+                                modifier = Modifier.size(20.dp)
                             )
+                            Spacer(Modifier.width(12.dp))
                         }
+                        Text(
+                            text = if (isImporting) "불러오는 중..." else "데이터 불러오기",
+                            fontSize = 16.sp
+                        )
                     }
+                    
+                    Spacer(Modifier.height(8.dp))
+                    
+                    Text(
+                        text = "저장된 JSON 파일로 할 일 목록을 복구합니다.\n⚠️ 기존 데이터는 모두 삭제됩니다!",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.error,
+                        lineHeight = 18.sp
+                    )
                 }
             }
         }
@@ -301,51 +312,14 @@ fun SettingsScreen() {
                     
                     Divider(modifier = Modifier.padding(vertical = 12.dp))
                     
-                    // 링크들
-                    TextButton(
-                        onClick = { /* TODO: 개인정보처리방침 */ },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(
-                            Icons.Default.Link,
-                            null,
-                            modifier = Modifier.size(16.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            "개인정보처리방침",
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    
-                    TextButton(
-                        onClick = { /* TODO: 오픈소스 라이선스 */ },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(
-                            Icons.Default.Link,
-                            null,
-                            modifier = Modifier.size(16.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            "오픈소스 라이선스",
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    
-                    Divider(modifier = Modifier.padding(vertical = 12.dp))
-                    
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(
-                            text = "개발: Todaily Team",
+                            text = "개발: 이주환",
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = "라이센스: MIT",
+                            text = "연락처: jsjh.dev@gmail.com",
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -357,7 +331,7 @@ fun SettingsScreen() {
         // 푸터
         item {
             Text(
-                text = "© 2026 Todaily. All rights reserved.",
+                text = "© 2026 이주환. All rights reserved.",
                 fontSize = 10.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier

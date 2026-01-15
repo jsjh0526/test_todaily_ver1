@@ -68,6 +68,7 @@ fun TodoItem(
                 
                 Spacer(Modifier.height(8.dp))
                 
+                // 첫 번째 줄: 우선순위, 마감일
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -111,29 +112,8 @@ fun TodoItem(
                                 tint = Color(0xFF717182)
                             )
                             Text(
-                                SimpleDateFormat("MM/dd", Locale.KOREAN)
+                                SimpleDateFormat("MM/dd HH:mm", Locale.KOREAN)
                                     .format(Date(todo.dueDate!!)),
-                                fontSize = 13.sp,
-                                color = Color(0xFF717182)
-                            )
-                        }
-                    }
-                    
-                    // 알림 표시
-                    if (todo.reminderTime != null) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Icon(
-                                Icons.Default.NotificationsActive,
-                                null,
-                                modifier = Modifier.size(14.dp),
-                                tint = Color(0xFFFF9800)
-                            )
-                            Text(
-                                SimpleDateFormat("HH:mm", Locale.KOREAN)
-                                    .format(Date(todo.reminderTime!!)),
                                 fontSize = 13.sp,
                                 color = Color(0xFF717182)
                             )
@@ -141,7 +121,44 @@ fun TodoItem(
                     }
                 }
                 
-                // 태그 (두 번째 줄)
+                // 두 번째 줄: 알림들
+                if (todo.reminderTimes.isNotEmpty()) {
+                    Spacer(Modifier.height(4.dp))
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        todo.reminderTimes.sortedDescending().take(2).forEach { reminderTime ->
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.NotificationsActive,
+                                    null,
+                                    modifier = Modifier.size(14.dp),
+                                    tint = Color(0xFFFF9800)
+                                )
+                                Text(
+                                    SimpleDateFormat("MM/dd HH:mm", Locale.KOREAN)
+                                        .format(Date(reminderTime)),
+                                    fontSize = 13.sp,
+                                    color = Color(0xFF717182)
+                                )
+                            }
+                        }
+                        // 2개 넘으면 +N 표시
+                        if (todo.reminderTimes.size > 2) {
+                            Text(
+                                "+${todo.reminderTimes.size - 2}",
+                                fontSize = 12.sp,
+                                color = Color(0xFF717182)
+                            )
+                        }
+                    }
+                }
+                
+                // 세 번째 줄: 태그
                 if (todo.tags.isNotEmpty()) {
                     Spacer(Modifier.height(4.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

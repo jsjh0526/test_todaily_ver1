@@ -4,11 +4,16 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.test_todaily_ver1.data.*
+import com.example.test_todaily_ver1.data.export.DataManager
+import com.example.test_todaily_ver1.notification.AlarmScheduler
+import java.io.File
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class TodoViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: TodoRepository
+    private val alarmScheduler = AlarmScheduler(application)
+    private val dataManager = DataManager(application)
 
     // 전체 할일
     val allTodos: StateFlow<List<Todo>>
@@ -94,32 +99,45 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
         tags: List<String> = emptyList(),
         description: String? = null,
         dueDate: Long? = null,
-        reminderTime: Long? = null
+        reminderTimes: List<Long> = emptyList()
     ) {
         viewModelScope.launch {
-            repository.insert(
-                Todo(
-                    content = content,
-                    priority = priority,
-                    tags = tags,
-                    description = description,
-                    dueDate = dueDate,
-                    reminderTime = reminderTime
-                )
+            val todo = Todo(
+                content = content,
+                priority = priority,
+                tags = tags,
+                description = description,
+                dueDate = dueDate,
+                reminderTimes = reminderTimes
             )
+            repository.insert(todo)
+            
+            // 알림 예약
+            alarmScheduler.scheduleAlarm(todo)
         }
     }
 
     // 할일 수정
     fun updateTodo(todo: Todo) {
         viewModelScope.launch {
+            // 기존 알림 취소
+            alarmScheduler.cancelAlarm(todo)
+            
+            // DB 업데이트
             repository.update(todo)
+            
+            // 새로운 알림 예약
+            alarmScheduler.scheduleAlarm(todo)
         }
     }
 
     // 할일 삭제
     fun deleteTodo(todo: Todo) {
         viewModelScope.launch {
+            // 알림 취소
+            alarmScheduler.cancelAlarm(todo)
+            
+            // DB 삭제
             repository.delete(todo)
         }
     }
@@ -144,6 +162,74 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
     // 정렬 순서 변경
     fun updateSortOrder(order: SortOrder) {
         _sortOrder.value = order
+    }
+
+    // ========== 데이터 백업/복구 ==========
+    
+    /**
+     * 데이터 내보내기 (JSON)
+     * @return 저장된 파일 경로 또는 null
+     */
+    suspend fun exportData(): File? {
+        return try {
+            val todos = allTodos.value
+            dataManager.exportToJson(todos)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    /**
+     * 데이터 불러오기 (JSON 파일)
+     * @param file 불러올 파일
+     * @return 성공 여부
+     */
+    suspend fun importData(file: File): Boolean {
+        return try {
+            val todos = dataManager.importFromJson(file) ?: return false
+            
+            // 기존 데이터 삭제
+            repository.deleteAll()
+            
+            // 새로운 데이터 추가
+            todos.forEach { todo ->
+                repository.insert(todo)
+                // 알림 재설정
+                alarmScheduler.scheduleAlarm(todo)
+            }
+            
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+    /**
+     * 데이터 불러오기 (URI)
+     * @param uriString 파일 URI
+     * @return 성공 여부
+     */
+    suspend fun importDataFromUri(uriString: String): Boolean {
+        return try {
+            val todos = dataManager.importFromUri(uriString) ?: return false
+            
+            // 기존 데이터 삭제
+            repository.deleteAll()
+            
+            // 새로운 데이터 추가
+            todos.forEach { todo ->
+                repository.insert(todo)
+                // 알림 재설정
+                alarmScheduler.scheduleAlarm(todo)
+            }
+            
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
     }
 }
 

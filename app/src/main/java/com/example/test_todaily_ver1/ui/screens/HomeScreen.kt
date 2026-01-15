@@ -104,8 +104,6 @@ fun HomeScreen(viewModel: TodoViewModel) {
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(text = "💡", fontSize = 28.sp)
-                            Spacer(modifier = Modifier.width(16.dp))
                             Text(
                                 text = "\" $currentQuote \"",
                                 modifier = Modifier.weight(1f),
@@ -187,7 +185,10 @@ fun HomeScreen(viewModel: TodoViewModel) {
 
                         Spacer(Modifier.height(4.dp))
 
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically  // 중간 정렬!
+                        ) {
                             OutlinedTextField(
                                 value = todoInput,
                                 onValueChange = { todoInput = it },
@@ -197,15 +198,26 @@ fun HomeScreen(viewModel: TodoViewModel) {
                                         color = Color(0xFF717182)
                                     ) 
                                 },
-                                modifier = Modifier.weight(1f),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(60.dp),  // 조금 크게!
                                 shape = RoundedCornerShape(10.dp),
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    unfocusedContainerColor = Color(0xFFF3F3F5),
-                                    focusedContainerColor = Color(0xFFF3F3F5),
+                                    unfocusedContainerColor = Color.White,  // 항상 흰색!
+                                    focusedContainerColor = Color.White,    // 항상 흰색!
+                                    disabledContainerColor = Color.White,   // 비활성화시에도 흰색
                                     unfocusedBorderColor = Color.Transparent,
-                                    focusedBorderColor = Color(0xFF615FFF)
+                                    focusedBorderColor = Color(0xFF615FFF),
+                                    disabledBorderColor = Color.Transparent,
+                                    unfocusedTextColor = Color(0xFF0A0A0A),  // 항상 검정!
+                                    focusedTextColor = Color(0xFF0A0A0A),    // 항상 검정!
+                                    disabledTextColor = Color(0xFF0A0A0A),   // 비활성화시에도 검정
+                                    cursorColor = Color(0xFF615FFF),         // 커서 보라색
+                                    unfocusedPlaceholderColor = Color(0xFF717182),
+                                    focusedPlaceholderColor = Color(0xFF717182)
                                 ),
-                                singleLine = true
+                                singleLine = true,
+                                maxLines = 1
                             )
                             
                             // 피그마 추가 버튼 (검정)
@@ -223,7 +235,9 @@ fun HomeScreen(viewModel: TodoViewModel) {
                                     }
                                 },
                                 enabled = todoInput.isNotBlank(),
-                                modifier = Modifier.width(104.dp),
+                                modifier = Modifier
+                                    .width(100.dp)  // 조금 작게
+                                    .height(52.dp),  // 조금 작게
                                 shape = RoundedCornerShape(10.dp),
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(0xFF030213),  // 피그마 검정
@@ -284,15 +298,24 @@ fun HomeScreen(viewModel: TodoViewModel) {
                                             color = Color(0xFF717182)
                                         ) 
                                     },
-                                    modifier = Modifier.weight(1f),
+                                    modifier = Modifier.weight(1f),  // 원래 크기로 롤백!
                                     shape = RoundedCornerShape(4.dp),
                                     colors = OutlinedTextFieldDefaults.colors(
-                                        unfocusedContainerColor = Color(0xFFF3F3F5),
-                                        focusedContainerColor = Color(0xFFF3F3F5),
+                                        unfocusedContainerColor = Color.White,  // 항상 흰색!
+                                        focusedContainerColor = Color.White,    // 항상 흰색!
+                                        disabledContainerColor = Color.White,
                                         unfocusedBorderColor = Color.Transparent,
-                                        focusedBorderColor = Color(0xFF615FFF)
+                                        focusedBorderColor = Color(0xFF615FFF),
+                                        disabledBorderColor = Color.Transparent,
+                                        unfocusedTextColor = Color(0xFF0A0A0A),  // 항상 검정!
+                                        focusedTextColor = Color(0xFF0A0A0A),    // 항상 검정!
+                                        disabledTextColor = Color(0xFF0A0A0A),
+                                        cursorColor = Color(0xFF615FFF),
+                                        unfocusedPlaceholderColor = Color(0xFF717182),
+                                        focusedPlaceholderColor = Color(0xFF717182)
                                     ),
                                     singleLine = true,
+                                    maxLines = 1,
                                     trailingIcon = {
                                         if (tagInput.isNotBlank()) {
                                             IconButton(onClick = {
