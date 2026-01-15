@@ -6,14 +6,14 @@ plugins {
 }
 
 android {
-    namespace = "com.example.test_todaily_ver1"
+    namespace = "com.jsjh_todaily.test_todaily_ver1"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.test_todaily_ver1"
+        applicationId = "com.jsjh_todaily.test_todaily_ver1"
         minSdk = 28
         targetSdk = 36
-        versionCode = 1
+        versionCode = 2
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
