@@ -25,6 +25,8 @@ import com.jsjh_todaily.test_todaily_ver1.ui.components.TagChip
 import com.jsjh_todaily.test_todaily_ver1.ui.dialogs.TodoDetailDialog
 import com.jsjh_todaily.test_todaily_ver1.ui.dialogs.DeleteConfirmDialog
 
+@OptIn(ExperimentalLayoutApi::class)
+
 @Composable
 fun HomeScreen(viewModel: TodoViewModel) {
     val isDarkTheme = isSystemInDarkTheme()
@@ -252,7 +254,11 @@ fun HomeScreen(viewModel: TodoViewModel) {
 
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp)
+                                .padding(vertical = 4.dp)
                         ) {
                             Text(
                                 "우선도:",
@@ -270,9 +276,15 @@ fun HomeScreen(viewModel: TodoViewModel) {
                             }
                         }
 
+                        Spacer(Modifier.height(12.dp))
+
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             if (tags.isNotEmpty()) {
-                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                FlowRow(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
                                     tags.forEach { tag ->
                                         TagChip(tag) { tags = tags - tag }
                                     }
@@ -298,7 +310,7 @@ fun HomeScreen(viewModel: TodoViewModel) {
                                             color = Color(0xFF717182)
                                         ) 
                                     },
-                                    modifier = Modifier.weight(1f),  // 원래 크기로 롤백!
+                                    modifier = Modifier.weight(1f),
                                     shape = RoundedCornerShape(4.dp),
                                     colors = OutlinedTextFieldDefaults.colors(
                                         unfocusedContainerColor = Color.White,  // 항상 흰색!

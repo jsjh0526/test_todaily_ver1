@@ -20,7 +20,7 @@ import com.jsjh_todaily.test_todaily_ver1.ui.components.TagChip
 import java.text.SimpleDateFormat
 import java.util.*
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun TodoDetailDialog(
     todo: Todo,
@@ -58,7 +58,19 @@ fun TodoDetailDialog(
     // 마감일 날짜 선택
     if (showDatePicker) {
         val datePickerState = rememberDatePickerState(
-            initialSelectedDateMillis = dueDate ?: System.currentTimeMillis()
+            initialSelectedDateMillis = dueDate ?: System.currentTimeMillis(),
+            selectableDates = object : SelectableDates {
+                override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                    // 오늘 이후만 선택 가능 (오늘 00:00:00 기준)
+                    val today = Calendar.getInstance().apply {
+                        set(Calendar.HOUR_OF_DAY, 0)
+                        set(Calendar.MINUTE, 0)
+                        set(Calendar.SECOND, 0)
+                        set(Calendar.MILLISECOND, 0)
+                    }.timeInMillis
+                    return utcTimeMillis >= today
+                }
+            }
         )
         
         DatePickerDialog(
@@ -128,7 +140,19 @@ fun TodoDetailDialog(
     // 알림 날짜 선택
     if (showReminderDatePicker) {
         val datePickerState = rememberDatePickerState(
-            initialSelectedDateMillis = System.currentTimeMillis()
+            initialSelectedDateMillis = System.currentTimeMillis(),
+            selectableDates = object : SelectableDates {
+                override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                    // 오늘 이후만 선택 가능 (오늘 00:00:00 기준)
+                    val today = Calendar.getInstance().apply {
+                        set(Calendar.HOUR_OF_DAY, 0)
+                        set(Calendar.MINUTE, 0)
+                        set(Calendar.SECOND, 0)
+                        set(Calendar.MILLISECOND, 0)
+                    }.timeInMillis
+                    return utcTimeMillis >= today
+                }
+            }
         )
         
         DatePickerDialog(
@@ -291,8 +315,9 @@ fun TodoDetailDialog(
                             )
                             
                             if (tags.isNotEmpty()) {
-                                Row(
+                                FlowRow(
                                     horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
                                     tags.forEach { tag ->

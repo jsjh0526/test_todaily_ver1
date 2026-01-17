@@ -13,8 +13,8 @@ android {
         applicationId = "com.jsjh_todaily.test_todaily_ver1"
         minSdk = 28
         targetSdk = 36
-        versionCode = 2
-        versionName = "1.0"
+        versionCode = 8
+        versionName = "1.0.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -26,6 +26,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {

@@ -81,8 +81,8 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
             // 정렬
             when (sort) {
                 SortOrder.NEWEST -> result.sortedByDescending { it.createdAt }
-                SortOrder.PRIORITY -> result.sortedByDescending { it.priority.ordinal }
-                SortOrder.STATUS -> result.sortedBy { it.isCompleted }
+                SortOrder.PRIORITY -> result.sortedBy { it.priority.ordinal }  // 높음(0) → 낮음(2)
+                SortOrder.TITLE -> result.sortedBy { it.content }  // 가나다순
                 SortOrder.DUE_DATE -> result.sortedBy { it.dueDate ?: Long.MAX_VALUE }
             }
         }.stateIn(
@@ -235,7 +235,7 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
 
 enum class SortOrder {
     NEWEST,    // 최신순
-    PRIORITY,  // 우선도순
-    STATUS,    // 상태순
+    PRIORITY,  // 우선도순 (높음→낮음)
+    TITLE,     // 제목순 (가나다순)
     DUE_DATE   // 마감일순
 }

@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -16,33 +17,26 @@ fun PriorityButton(
     selected: Boolean,
     onClick: () -> Unit
 ) {
-    Button(
+    // Surface를 사용하여 터치 인식률과 접근성 향상
+    Surface(
         onClick = onClick,
-        modifier = Modifier
-            .width(52.dp)
-            .height(28.dp),
+        modifier = Modifier.size(width = 72.dp, height = 48.dp),
         shape = RoundedCornerShape(10.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = if (selected) {
-                Color(0xFF615FFF)  // 피그마 보라
-            } else {
-                Color(0xFFF3F3F5)  // 피그마 회색
-            },
-            contentColor = if (selected) {
-                Color.White
-            } else {
-                Color(0xFF717182)  // 피그마 텍스트
-            }
-        ),
-        contentPadding = PaddingValues(0.dp)
+        color = if (selected) Color(0xFF615FFF) else Color(0xFFF3F3F5),
+        contentColor = if (selected) Color.White else Color(0xFF717182)
     ) {
-        Text(
-            when (priority) {
-                Priority.HIGH -> "높음"
-                Priority.MEDIUM -> "보통"
-                Priority.LOW -> "낮음"
-            },
-            fontSize = 14.sp
-        )
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Text(
+                text = when (priority) {
+                    Priority.HIGH -> "높음"
+                    Priority.MEDIUM -> "보통"
+                    Priority.LOW -> "낮음"
+                },
+                fontSize = 14.sp
+            )
+        }
     }
 }

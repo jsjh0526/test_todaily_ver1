@@ -21,6 +21,8 @@ import com.jsjh_todaily.test_todaily_ver1.ui.theme.PriorityMedium
 import java.text.SimpleDateFormat
 import java.util.*
 
+@OptIn(ExperimentalLayoutApi::class)
+
 @Composable
 fun TodoItem(
     todo: Todo,
@@ -161,7 +163,11 @@ fun TodoItem(
                 // 세 번째 줄: 태그
                 if (todo.tags.isNotEmpty()) {
                     Spacer(Modifier.height(4.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
                         todo.tags.forEach { tag ->
                             Text(
                                 "#$tag",

@@ -214,13 +214,25 @@ fun ListScreen(viewModel: TodoViewModel) {
                                     }
                                 )
                                 DropdownMenuItem(
-                                    text = { Text("상태순") },
+                                    text = { Text("제목순") },
                                     onClick = {
-                                        viewModel.updateSortOrder(SortOrder.STATUS)
+                                        viewModel.updateSortOrder(SortOrder.TITLE)
                                         showSortMenu = false
                                     },
                                     leadingIcon = {
-                                        if (sortOrder == SortOrder.STATUS) {
+                                        if (sortOrder == SortOrder.TITLE) {
+                                            Icon(Icons.Default.Check, null)
+                                        }
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text("마감일순") },
+                                    onClick = {
+                                        viewModel.updateSortOrder(SortOrder.DUE_DATE)
+                                        showSortMenu = false
+                                    },
+                                    leadingIcon = {
+                                        if (sortOrder == SortOrder.DUE_DATE) {
                                             Icon(Icons.Default.Check, null)
                                         }
                                     }
