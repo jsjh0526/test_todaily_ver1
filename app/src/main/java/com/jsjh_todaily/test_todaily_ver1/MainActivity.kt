@@ -35,8 +35,22 @@ import androidx.navigation.compose.rememberNavController
 import com.jsjh_todaily.test_todaily_ver1.ui.screens.*
 import com.jsjh_todaily.test_todaily_ver1.ui.theme.Test_todaily_ver1Theme
 import com.jsjh_todaily.test_todaily_ver1.viewmodel.TodoViewModel
+import com.jsjh_todaily.test_todaily_ver1.utils.InAppUpdateManager
 
 class MainActivity : ComponentActivity() {
+    
+    // In-App Update Manager
+    private lateinit var updateManager: InAppUpdateManager
+    
+    // 업데이트 결과 처리 런처
+    private val updateLauncher = registerForActivityResult(
+        ActivityResultContracts.StartIntentSenderForResult()
+    ) { result ->
+        if (result.resultCode != RESULT_OK) {
+            // 업데이트 취소 또는 실패 - 강제 업데이트이므로 앱 종료
+            finish()
+        }
+    }
     
     // 알림 권한 요청 런처
     private val requestPermissionLauncher = registerForActivityResult(
@@ -50,6 +64,13 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        
+        // In-App Update 초기화 및 체크
+        updateManager = InAppUpdateManager(this)
+        updateManager.checkAndStartUpdate(
+            launcher = updateLauncher,
+            forceUpdate = true  // 강제 업데이트
+        )
         
         // 알림 권한 요청
         requestNotificationPermission()
@@ -106,6 +127,12 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+    
+    override fun onResume() {
+        super.onResume()
+        // 앱 재시작시 미완료 업데이트 체크
+        updateManager.checkPendingUpdate(updateLauncher)
     }
 }
 

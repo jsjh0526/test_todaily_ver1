@@ -71,6 +71,10 @@ dependencies {
     // Gson for JSON
     implementation("com.google.code.gson:gson:2.10.1")
     
+    // In-App Updates (강제 업데이트)
+    implementation("com.google.android.play:app-update:2.1.0")
+    implementation("com.google.android.play:app-update-ktx:2.1.0")
+    
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
