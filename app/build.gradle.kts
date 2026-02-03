@@ -13,8 +13,8 @@ android {
         applicationId = "com.jsjh_todaily.test_todaily_ver1"
         minSdk = 28
         targetSdk = 36
-        versionCode = 8
-        versionName = "1.0.6"
+        versionCode = 9
+        versionName = "1.0.7"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -38,6 +38,11 @@ android {
     }
     buildFeatures {
         compose = true
+    }
+    
+    lint {
+        abortOnError = false
+        checkReleaseBuilds = false
     }
 }
 

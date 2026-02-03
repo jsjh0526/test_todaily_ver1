@@ -35,12 +35,14 @@ import androidx.navigation.compose.rememberNavController
 import com.jsjh_todaily.test_todaily_ver1.ui.screens.*
 import com.jsjh_todaily.test_todaily_ver1.ui.theme.Test_todaily_ver1Theme
 import com.jsjh_todaily.test_todaily_ver1.viewmodel.TodoViewModel
-import com.jsjh_todaily.test_todaily_ver1.utils.InAppUpdateManager
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory
+import com.google.android.play.core.appupdate.AppUpdateOptions
+import com.google.android.play.core.install.model.AppUpdateType
+import com.google.android.play.core.install.model.UpdateAvailability
 
 class MainActivity : ComponentActivity() {
     
-    // In-App Update Manager
-    private lateinit var updateManager: InAppUpdateManager
+
     
     // 업데이트 결과 처리 런처
     private val updateLauncher = registerForActivityResult(
@@ -65,12 +67,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         
-        // In-App Update 초기화 및 체크
-        updateManager = InAppUpdateManager(this)
-        updateManager.checkAndStartUpdate(
-            launcher = updateLauncher,
-            forceUpdate = true  // 강제 업데이트
-        )
+        // In-App Update 체크 (강제 업데이트)
+        checkForUpdate()
         
         // 알림 권한 요청
         requestNotificationPermission()
@@ -132,7 +130,49 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         // 앱 재시작시 미완료 업데이트 체크
-        updateManager.checkPendingUpdate(updateLauncher)
+        checkPendingUpdate()
+    }
+    
+    // 업데이트 체크
+    private fun checkForUpdate() {
+        val appUpdateManager = AppUpdateManagerFactory.create(this)
+        val appUpdateInfoTask = appUpdateManager.appUpdateInfo
+        
+        appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
+            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE &&
+                appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)
+            ) {
+                val updateOptions = AppUpdateOptions.newBuilder(AppUpdateType.IMMEDIATE).build()
+                try {
+                    appUpdateManager.startUpdateFlowForResult(
+                        appUpdateInfo,
+                        updateLauncher,
+                        updateOptions
+                    )
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+    }
+    
+    // 미완료 업데이트 체크
+    private fun checkPendingUpdate() {
+        val appUpdateManager = AppUpdateManagerFactory.create(this)
+        appUpdateManager.appUpdateInfo.addOnSuccessListener { appUpdateInfo ->
+            if (appUpdateInfo.updateAvailability() == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS) {
+                val updateOptions = AppUpdateOptions.newBuilder(AppUpdateType.IMMEDIATE).build()
+                try {
+                    appUpdateManager.startUpdateFlowForResult(
+                        appUpdateInfo,
+                        updateLauncher,
+                        updateOptions
+                    )
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
     }
 }
 
