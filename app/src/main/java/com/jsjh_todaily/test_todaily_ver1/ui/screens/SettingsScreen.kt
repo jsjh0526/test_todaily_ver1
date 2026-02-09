@@ -74,6 +74,20 @@ fun SettingsScreen(viewModel: TodoViewModel) {
             }
         }
 
+        // 디스플레이
+        item {
+            Text(
+                text = "디스플레이",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+        }
+        
+        item {
+            ThemeSettingCard(viewModel)
+        }
+
         // 알림
         item {
             Text(
@@ -364,6 +378,135 @@ fun SettingsScreen(viewModel: TodoViewModel) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 16.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun ThemeSettingCard(viewModel: TodoViewModel) {
+    val themeMode by viewModel.themeMode.collectAsState()
+    
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
+        ) {
+            // 제목
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(bottom = 12.dp)
+            ) {
+                Icon(
+                    imageVector = if (themeMode == "light") Icons.Default.LightMode 
+                                  else if (themeMode == "dark") Icons.Default.DarkMode
+                                  else Icons.Default.SettingsBrightness,
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Column {
+                    Text(
+                        text = "테마 설정",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = when (themeMode) {
+                            "light" -> "라이트 모드를 사용 중입니다"
+                            "dark" -> "다크 모드를 사용 중입니다"
+                            else -> "시스템 설정을 따릅니다"
+                        },
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            
+            // 테마 버튼
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // 라이트 모드
+                ThemeButton(
+                    text = "라이트",
+                    icon = Icons.Default.LightMode,
+                    isSelected = themeMode == "light",
+                    onClick = { viewModel.setThemeMode("light") },
+                    modifier = Modifier.weight(1f)
+                )
+                
+                // 다크 모드
+                ThemeButton(
+                    text = "다크",
+                    icon = Icons.Default.DarkMode,
+                    isSelected = themeMode == "dark",
+                    onClick = { viewModel.setThemeMode("dark") },
+                    modifier = Modifier.weight(1f)
+                )
+                
+                // 시스템
+                ThemeButton(
+                    text = "시스템",
+                    icon = Icons.Default.SettingsBrightness,
+                    isSelected = themeMode == "system",
+                    onClick = { viewModel.setThemeMode("system") },
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun ThemeButton(
+    text: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Button(
+        onClick = onClick,
+        modifier = modifier.height(80.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = if (isSelected) 
+                MaterialTheme.colorScheme.primaryContainer
+            else 
+                MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = if (isSelected) 
+                MaterialTheme.colorScheme.onPrimaryContainer
+            else 
+                MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(28.dp)
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = text,
+                fontSize = 14.sp,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
             )
         }
     }

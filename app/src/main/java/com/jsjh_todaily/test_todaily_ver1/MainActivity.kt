@@ -77,7 +77,18 @@ class MainActivity : ComponentActivity() {
         requestExactAlarmPermission()
         
         setContent {
-            Test_todaily_ver1Theme {
+            val todoViewModel: TodoViewModel = viewModel()
+            val themeMode by todoViewModel.themeMode.collectAsState()
+            val systemInDarkTheme = isSystemInDarkTheme()
+            
+            // 테마 결정
+            val darkTheme = when (themeMode) {
+                "light" -> false
+                "dark" -> true
+                else -> systemInDarkTheme  // "system"
+            }
+            
+            Test_todaily_ver1Theme(darkTheme = darkTheme) {
                 var showSplash by remember { mutableStateOf(true) }
                 
                 if (showSplash) {

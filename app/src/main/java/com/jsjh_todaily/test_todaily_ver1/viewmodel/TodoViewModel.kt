@@ -1,6 +1,11 @@
 package com.jsjh_todaily.test_todaily_ver1.viewmodel
 
 import android.app.Application
+import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.jsjh_todaily.test_todaily_ver1.data.*
@@ -11,6 +16,12 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class TodoViewModel(application: Application) : AndroidViewModel(application) {
+    
+    companion object {
+        // DataStore 확장 프로퍼티
+        private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
+    }
+    
     private val repository: TodoRepository
     private val alarmScheduler = AlarmScheduler(application)
     private val dataManager = DataManager(application)
@@ -33,6 +44,10 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
 
     // 필터링된 할일 목록
     val filteredTodos: StateFlow<List<Todo>>
+    
+    // 테마 모드 ("light", "dark", "system")
+    private val _themeMode = MutableStateFlow("system")
+    val themeMode: StateFlow<String> = _themeMode.asStateFlow()
 
     init {
         val todoDao = TodoDatabase.getDatabase(application).todoDao()
@@ -90,6 +105,17 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
+        
+        // 테마 설정 불러오기
+        viewModelScope.launch {
+            getApplication<Application>().dataStore.data
+                .map { preferences ->
+                    preferences[PreferencesKeys.THEME_MODE] ?: "system"
+                }
+                .collect { theme ->
+                    _themeMode.value = theme
+                }
+        }
     }
 
     // 할일 추가
@@ -229,6 +255,19 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
         } catch (e: Exception) {
             e.printStackTrace()
             false
+        }
+    }
+    
+    /**
+     * 테마 모드 변경
+     * @param mode "light", "dark", "system"
+     */
+    fun setThemeMode(mode: String) {
+        viewModelScope.launch {
+            getApplication<Application>().dataStore.edit { preferences ->
+                preferences[PreferencesKeys.THEME_MODE] = mode
+            }
+            _themeMode.value = mode
         }
     }
 }
