@@ -310,7 +310,7 @@ fun SettingsScreen(viewModel: TodoViewModel) {
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                text = "버전 1.0.5",
+                                text = "버전 1.0.10",
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )

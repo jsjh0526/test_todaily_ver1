@@ -25,7 +25,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -89,6 +92,18 @@ class MainActivity : ComponentActivity() {
             }
             
             Test_todaily_ver1Theme(darkTheme = darkTheme) {
+                // 시스템바 색상 동기화
+                val view = LocalView.current
+                val colorScheme = MaterialTheme.colorScheme
+                
+                SideEffect {
+                    val window = (view.context as ComponentActivity).window
+                    val insetsController = WindowCompat.getInsetsController(window, view)
+                    // 상태바/네비게이션바 아이콘 색상 설정 (다크 모드에서 밝게, 라이트 모드에서 어둡게)
+                    insetsController.isAppearanceLightStatusBars = !darkTheme
+                    insetsController.isAppearanceLightNavigationBars = !darkTheme
+                }
+                
                 var showSplash by remember { mutableStateOf(true) }
                 
                 if (showSplash) {
@@ -192,7 +207,17 @@ fun MainApp() {
     val navController = rememberNavController()
     val viewModel: TodoViewModel = viewModel()
     
-    val isDarkMode = isSystemInDarkTheme()
+    // 사용자 선택 테마 가져오기
+    val themeMode by viewModel.themeMode.collectAsState()
+    val systemInDarkTheme = isSystemInDarkTheme()
+    
+    // 테마 결정 (사용자 선택 우선!)
+    val isDarkMode = when (themeMode) {
+        "light" -> false
+        "dark" -> true
+        else -> systemInDarkTheme  // "system"
+    }
+    
     val backgroundLight = com.jsjh_todaily.test_todaily_ver1.ui.theme.BackgroundLight
     val backgroundLight2 = com.jsjh_todaily.test_todaily_ver1.ui.theme.BackgroundLight2
     val darkBackground = com.jsjh_todaily.test_todaily_ver1.ui.theme.DarkBackground
