@@ -24,7 +24,7 @@ fun DeleteConfirmDialog(
                 .padding(16.dp),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
-                containerColor = Color.White
+                containerColor = MaterialTheme.colorScheme.surface
             )
         ) {
             Column(
@@ -39,14 +39,14 @@ fun DeleteConfirmDialog(
                     text = "할 일 삭제",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF0A0A0A)
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 
                 // 내용
                 Text(
                     text = "정말로 이 할 일을 삭제하시겠습니까?\n삭제된 할 일은 복구할 수 없습니다.",
                     fontSize = 15.sp,
-                    color = Color(0xFF4A5565),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     lineHeight = 22.sp
                 )
                 

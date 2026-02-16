@@ -12,7 +12,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.isSystemInDarkTheme
 import com.jsjh_todaily.test_todaily_ver1.data.Priority
 import com.jsjh_todaily.test_todaily_ver1.data.Todo
 import com.jsjh_todaily.test_todaily_ver1.ui.theme.PriorityHigh
@@ -30,13 +29,15 @@ fun TodoItem(
     onDelete: () -> Unit,
     onClick: () -> Unit
 ) {
-    val isDarkTheme = isSystemInDarkTheme()
+    // MaterialTheme 사용 (테마 자동 동기화!)
+    val colorScheme = MaterialTheme.colorScheme
+    
     Card(
         modifier = Modifier.fillMaxWidth(),
         onClick = onClick,
         shape = RoundedCornerShape(10.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isDarkTheme) Color(0xFF2D2D2D) else Color.White
+            containerColor = colorScheme.surface
         ),
         elevation = CardDefaults.cardElevation(1.dp)
     ) {
@@ -64,7 +65,7 @@ fun TodoItem(
                     color = if (todo.isCompleted) {
                         Color(0xFF717182)
                     } else {
-                        if (isDarkTheme) Color.White else Color(0xFF0A0A0A)
+                        colorScheme.onSurface
                     }
                 )
                 

@@ -29,7 +29,15 @@ import com.jsjh_todaily.test_todaily_ver1.ui.dialogs.DeleteConfirmDialog
 
 @Composable
 fun HomeScreen(viewModel: TodoViewModel) {
-    val isDarkTheme = isSystemInDarkTheme()
+    // 사용자 선택 테마 가져오기
+    val themeMode by viewModel.themeMode.collectAsState()
+    val systemInDarkTheme = isSystemInDarkTheme()
+    val isDarkTheme = when (themeMode) {
+        "light" -> false
+        "dark" -> true
+        else -> systemInDarkTheme
+    }
+    
     val highPriorityTodos by viewModel.highPriorityTodos.collectAsState()
     
     var todoInput by remember { mutableStateOf("") }
