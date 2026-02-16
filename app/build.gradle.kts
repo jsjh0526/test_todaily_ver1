@@ -13,8 +13,8 @@ android {
         applicationId = "com.jsjh_todaily.test_todaily_ver1"
         minSdk = 28
         targetSdk = 36
-        versionCode = 12
-        versionName = "1.0.10"
+        versionCode = 13
+        versionName = "1.0.11"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
