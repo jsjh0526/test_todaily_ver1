@@ -24,7 +24,7 @@ class AlarmScheduler(private val context: Context) {
         // 커스텀 알림들
         todo.reminderTimes.forEachIndexed { index, reminderTime ->
             scheduleNotification(
-                todo.id * 1000 + index, // 고유 ID
+                (todo.id.toLong() * 1000L + index).toInt(), // 고유 ID
                 reminderTime,
                 todo.content,
                 "설정한 알림 시간입니다!"
@@ -73,7 +73,7 @@ class AlarmScheduler(private val context: Context) {
 
         // 커스텀 알림들 취소
         todo.reminderTimes.forEachIndexed { index, _ ->
-            cancelNotification(todo.id * 1000 + index)
+            cancelNotification((todo.id.toLong() * 1000L + index).toInt())
         }
     }
 

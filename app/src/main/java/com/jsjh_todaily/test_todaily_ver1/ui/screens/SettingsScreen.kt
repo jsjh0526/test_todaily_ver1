@@ -19,6 +19,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jsjh_todaily.test_todaily_ver1.BuildConfig
 import com.jsjh_todaily.test_todaily_ver1.viewmodel.TodoViewModel
 import kotlinx.coroutines.launch
 
@@ -310,7 +311,7 @@ fun SettingsScreen(viewModel: TodoViewModel) {
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                text = "버전 1.0.11",
+                                text = "버전 ${BuildConfig.VERSION_NAME}",
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
